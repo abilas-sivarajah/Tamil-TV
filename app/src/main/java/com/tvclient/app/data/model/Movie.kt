@@ -30,6 +30,10 @@ data class Movie(
     val isSeriesFolder: Boolean
         get() = id.startsWith("td_series:")
 
+    /** True fuer App-Kacheln wie "Nach Updates suchen" - kein Inhalt, der Klick loest eine Aktion aus. */
+    val isAppAction: Boolean
+        get() = id.startsWith("app:")
+
     /** Zweite Zeile auf der Karte, z. B. "2024 - 2h 11m". */
     val subtitleLine: String
         get() = listOfNotNull(

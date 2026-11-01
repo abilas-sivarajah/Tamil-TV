@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rahmen in Akzentfarbe, solange die Notizen den Fokus haben (scrollbar mit hoch/runter) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/app_background" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/brand_accent" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/app_background" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</selector>

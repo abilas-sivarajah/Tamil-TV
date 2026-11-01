@@ -20,4 +20,25 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+    <!-- Update-Dialog: schwebt ueber dem Startbildschirm, Hintergrund stark abgedunkelt -->
+    <style name="Theme.TvClient.UpdateDialog" parent="android:Theme.Material.Dialog.NoActionBar">
+        <item name="android:windowBackground">@drawable/update_dialog_background</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+        <item name="android:backgroundDimAmount">0.85</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
+
+    <style name="UpdateButton">
+        <item name="android:background">@drawable/update_button_background</item>
+        <item name="android:textColor">@color/update_button_text</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:minWidth">140dp</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
 </resources>

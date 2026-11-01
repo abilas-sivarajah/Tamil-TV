@@ -7,4 +7,7 @@
     <color name="card_background">#FF1E1E26</color>
     <color name="card_background_selected">#FF2F6B52</color>
     <color name="card_placeholder">#FF26262F</color>
+
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="error_text">#FFFF5252</color>
 </resources>

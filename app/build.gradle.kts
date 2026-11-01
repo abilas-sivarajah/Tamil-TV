@@ -1,6 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
 }
+
+// Version kommt aus gradle.properties; der Release-Workflow ueberschreibt sie mit dem Git-Tag
+val appVersionName = providers.gradleProperty("appVersionName").get()
+val appVersionCode = providers.gradleProperty("appVersionCode").get().toInt()
+
+// Fester Signierschluessel fuer Releases: in CI ueber Umgebungsvariablen, lokal optional ueber
+// keystore.properties. Ohne beides wird mit dem Debug-Key signiert.
+// Achtung: Updates installieren nur, wenn alle Versionen mit demselben Schluessel signiert sind.
+val keystoreProps = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+fun signingValue(env: String, prop: String): String? =
+    System.getenv(env)?.takeIf { it.isNotBlank() } ?: keystoreProps.getProperty(prop)
+val releaseKeystorePath = signingValue("TV_KEYSTORE_PATH", "storeFile")
 
 android {
     namespace = "com.tvclient.app"
@@ -11,8 +27,8 @@ android {
         // Fire OS 5 (Fire TV Stick 2. Gen) = API 22, Fire OS 7 = API 28
         minSdk = 22
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         // Basis-URL kommt aus gradle.properties -> kein Code-Edit beim Serverwechsel
         buildConfigField(
@@ -20,6 +36,23 @@ android {
             "API_BASE_URL",
             "\"${project.findProperty("tvclient.apiBaseUrl") ?: "http://10.0.2.2:8000/"}\""
         )
+        // GitHub-Repo ("owner/repo"), dessen Releases die App als Updates anbietet
+        buildConfigField(
+            "String",
+            "UPDATE_REPO",
+            "\"${project.findProperty("tvclient.updateRepo") ?: ""}\""
+        )
+    }
+
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = rootProject.file(releaseKeystorePath)
+                storePassword = signingValue("TV_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("TV_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("TV_KEY_PASSWORD", "keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -30,8 +63,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Fuer den Eigengebrauch mit dem Debug-Schluessel signieren
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

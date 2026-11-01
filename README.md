@@ -52,6 +52,30 @@ adb install -r app\build\outputs\apk\debug\app-debug.apk
 
 Die App erscheint als Kachel im Startbildschirm (`LEANBACK_LAUNCHER`).
 
+## Updates veröffentlichen
+
+Die App aktualisiert sich selbst über GitHub Releases dieses Repos:
+
+1. Auf GitHub **Releases → Draft a new release**, neuen Tag im Format
+   `vMAJOR.MINOR.PATCH` anlegen (z. B. `v1.1.1`), Notizen schreiben, **Publish**.
+   Alternativ: `gh release create v1.1.1 --notes "Was neu ist"`.
+2. Der Workflow [`release.yml`](.github/workflows/release.yml) baut die APK
+   (Version = Tag), signiert sie und hängt sie als `Tamil_TV.apk` an das Release
+   – dauert ca. 5 Minuten.
+3. Jede installierte App prüft beim Öffnen und bei jeder Rückkehr auf den
+   Startbildschirm (höchstens alle 5 Minuten), zeigt dann „Neues Update verfügbar“
+   mit den Release-Notizen und installiert auf Knopfdruck. Manuell geht es über die
+   Kachel **App → Nach Updates suchen**.
+
+Beim ersten Update fragt Fire OS einmalig nach „Unbekannte Apps installieren“ für
+diese App. „Später“ blendet ein Release 24 Stunden lang aus.
+
+**Signierschlüssel:** Android installiert ein Update nur, wenn es mit demselben
+Schlüssel signiert ist wie die installierte App. Der Workflow signiert mit dem
+Keystore aus den Repo-Secrets `TV_KEYSTORE_BASE64`, `TV_KEYSTORE_PASSWORD`,
+`TV_KEY_ALIAS` und `TV_KEY_PASSWORD` – aktuell der lokale Debug-Keystore, sodass
+selbst gebaute und von GitHub geladene Versionen zueinander passen.
+
 ## Aufbau
 
 ```
@@ -59,17 +83,19 @@ app/src/main/java/com/tvclient/app/
 ├─ data/
 │  ├─ model/Movie.kt            Katalog-Modelle (Movie, Category, Listen-Antwort)
 │  ├─ model/StreamResponse.kt   Wiedergabe-Info inkl. Header und Untertitel
-│  └─ remote/
-│     ├─ ApiService.kt          Retrofit-Interface = der Backend-Vertrag
-│     ├─ ApiClient.kt           geteilter OkHttp-Client + Retrofit-Setup
-│     └─ MediaRepository.kt     IO-Dispatcher, Fehler als Result
+│  ├─ remote/
+│  │  ├─ ApiService.kt          Retrofit-Interface = der Backend-Vertrag
+│  │  ├─ ApiClient.kt           geteilter OkHttp-Client + Retrofit-Setup
+│  │  └─ MediaRepository.kt     IO-Dispatcher, Fehler als Result
+│  └─ update/UpdateManager.kt   Update-Prüfung, Download, Installation
 └─ ui/
    ├─ browse/MainActivity.kt    Host
    ├─ browse/BrowseFragment.kt  Zeilen, Pagination, Klick → Player
    ├─ browse/CardPresenter.kt   Poster-Karte samt Fokus-Zustand
    ├─ browse/CatalogRow.kt      Pagination-Zustand einer Zeile
    ├─ search/SearchFragment.kt  Suche mit Debounce
-   └─ player/PlayerActivity.kt  ExoPlayer, Header-Injection, D-Pad
+   ├─ player/PlayerActivity.kt  ExoPlayer, Header-Injection, D-Pad
+   └─ update/UpdateActivity.kt  Update-Dialog
 ```
 
 Der einzige Ort, an dem das Backend-Format steckt, ist `data/` – die UI kennt nur
@@ -84,6 +110,8 @@ die Modelle.
 | Nachlade-Abstand | `BrowseFragment.PREFETCH_DISTANCE` |
 | Zeilen beim Start vorladen | `BrowseFragment.INITIAL_ROWS_TO_PREFETCH` |
 | Default-User-Agent | `PlayerActivity.DEFAULT_USER_AGENT` |
+| Update-Quelle (Repo) | `tvclient.updateRepo` in `gradle.properties` |
+| Version lokaler Builds | `appVersionName` / `appVersionCode` in `gradle.properties` |
 | Farben / Name | `res/values/colors.xml`, `res/values/strings.xml` |
 
 ## Noch zu tun, falls du weitermachst

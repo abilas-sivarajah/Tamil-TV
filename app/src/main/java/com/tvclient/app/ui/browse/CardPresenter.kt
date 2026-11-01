@@ -56,7 +56,7 @@ class CardPresenter(
             (cardHeightDp * density).toInt()
         )
 
-        val isLogoCard = movie.isChannelFolder || movie.isLiveTv
+        val isLogoCard = movie.isChannelFolder || movie.isLiveTv || movie.isAppAction
         val pad = if (isLogoCard) (16 * density).toInt() else 0
         cardView.mainImageView?.apply {
             scaleType = if (isLogoCard) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP

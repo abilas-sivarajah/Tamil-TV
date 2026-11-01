@@ -1,0 +1,93 @@
+name: Build & Release Tamil TV
+
+# Ablauf: Auf GitHub ein neues Release mit Tag vMAJOR.MINOR.PATCH veroeffentlichen (z. B. v1.1.1).
+# Dieser Workflow baut daraufhin die APK, signiert sie und haengt sie als Tamil_TV.apk an das
+# Release. Die App findet sie ueber die GitHub API und bietet das Update an.
+on:
+  release:
+    types: [published]
+  # Manuell gestartet: nur bauen und als Artefakt ablegen (zum Testen)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & attach APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Version aus dem Tag ableiten (v1.2.3 -> versionName 1.2.3, versionCode 10203),
+      # damit Release und App-Version nie auseinanderlaufen
+      - name: Determine version from tag
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          if ! [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Tag '$TAG' muss das Format vMAJOR.MINOR.PATCH haben (z. B. v1.1.1)."
+            exit 1
+          fi
+          CODE=$(( BASH_REMATCH[1] * 10000 + BASH_REMATCH[2] * 100 + BASH_REMATCH[3] ))
+          echo "Version $VERSION (versionCode $CODE)"
+          echo "VERSION_ARGS=-PappVersionName=$VERSION -PappVersionCode=$CODE" >> "$GITHUB_ENV"
+
+      # Ohne festen Schluessel bekaeme jeder Build einen neuen Debug-Key,
+      # und Android wuerde jedes In-App-Update als "anders signiert" ablehnen.
+      - name: Restore signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TV_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Secret TV_KEYSTORE_BASE64 fehlt. Ohne festen Signierschluessel schlagen In-App-Updates fehl."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "TV_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          TV_KEYSTORE_PASSWORD: ${{ secrets.TV_KEYSTORE_PASSWORD }}
+          TV_KEY_ALIAS: ${{ secrets.TV_KEY_ALIAS }}
+          TV_KEY_PASSWORD: ${{ secrets.TV_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease $VERSION_ARGS --no-daemon
+
+      - name: Prepare APK
+        run: |
+          mkdir -p release-artifacts
+          cp app/build/outputs/apk/release/app-release.apk release-artifacts/Tamil_TV.apk
+
+      - name: Show signing certificate
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          "$APKSIGNER" verify --print-certs release-artifacts/Tamil_TV.apk | grep -E "DN|SHA-256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tamil-TV-apk
+          path: release-artifacts/Tamil_TV.apk
+
+      - name: Attach APK to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" release-artifacts/Tamil_TV.apk --clobber --repo "$GITHUB_REPOSITORY"

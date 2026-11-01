@@ -17,10 +17,13 @@ import androidx.lifecycle.lifecycleScope
 import com.tvclient.app.R
 import com.tvclient.app.data.model.Movie
 import com.tvclient.app.data.remote.MediaRepository
+import com.tvclient.app.data.update.UpdateCheckResult
+import com.tvclient.app.data.update.UpdateManager
 import com.tvclient.app.ui.player.PlayerActivity
 import com.tvclient.app.ui.search.SearchActivity
 import com.tvclient.app.ui.series.ChannelActivity
 import com.tvclient.app.ui.series.SeriesActivity
+import com.tvclient.app.ui.update.UpdateActivity
 import kotlinx.coroutines.launch
 
 /**
@@ -65,6 +68,7 @@ class BrowseFragment : BrowseSupportFragment() {
 
     private fun openPlayer(movie: Movie) {
         when {
+            movie.id == UPDATE_CARD_ID -> checkForUpdateManually()
             movie.isChannelFolder -> startActivity(ChannelActivity.intent(requireContext(), movie))
             movie.isSeriesFolder -> startActivity(SeriesActivity.intent(requireContext(), movie))
             else -> startActivity(PlayerActivity.intent(requireContext(), movie))
@@ -89,7 +93,35 @@ class BrowseFragment : BrowseSupportFragment() {
                     }
                     // Nur die erste Zeile sofort laden; der Rest folgt beim Durchnavigieren.
                     rowStates.values.take(INITIAL_ROWS_TO_PREFETCH).forEach { loadNextPage(it) }
+                    addAppRow(categories.size)
                 }
+        }
+    }
+
+    /** Letzte Zeile "App" mit der Kachel fuer die manuelle Update-Suche. */
+    private fun addAppRow(index: Int) {
+        val updateCard = Movie(
+            id = UPDATE_CARD_ID,
+            title = getString(R.string.update_card_title),
+            thumbnail = "android.resource://${requireContext().packageName}/${R.drawable.ic_update}",
+            year = getString(R.string.update_card_subtitle, UpdateManager.currentVersion)
+        )
+        val listAdapter = ArrayObjectAdapter(cardPresenter).apply { add(updateCard) }
+        rowsAdapter.add(ListRow(HeaderItem(index.toLong(), getString(R.string.row_app)), listAdapter))
+    }
+
+    /** Sucht sofort und ignoriert ein frueheres "Spaeter". */
+    private fun checkForUpdateManually() {
+        val context = requireContext()
+        Toast.makeText(context, R.string.update_checking, Toast.LENGTH_SHORT).show()
+        viewLifecycleOwner.lifecycleScope.launch {
+            when (val result = UpdateManager.checkForUpdate(context, force = true)) {
+                is UpdateCheckResult.Available ->
+                    startActivity(UpdateActivity.intent(context, result.release))
+                UpdateCheckResult.UpToDate ->
+                    showError(getString(R.string.update_up_to_date, UpdateManager.currentVersion))
+                is UpdateCheckResult.Failed -> showError(result.message)
+            }
         }
     }
 
@@ -152,6 +184,7 @@ class BrowseFragment : BrowseSupportFragment() {
     }
 
     companion object {
+        private const val UPDATE_CARD_ID = "app:check_update"
         private const val PREFETCH_DISTANCE = 6
         private const val INITIAL_ROWS_TO_PREFETCH = 5
     }
