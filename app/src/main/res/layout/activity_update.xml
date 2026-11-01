@@ -31,11 +31,13 @@
         android:textColor="@color/text_secondary"
         android:textSize="13sp" />
 
-    <!-- Fokussierbar, damit sich lange Notizen mit hoch/runter scrollen lassen -->
+    <!-- Fokussierbar, damit sich lange Notizen mit hoch/runter scrollen lassen.
+         layout_weight: reicht die Bildschirmhoehe nicht, schrumpfen die Notizen statt die Buttons abzuschneiden -->
     <TextView
         android:id="@+id/changelog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_marginTop="6dp"
         android:background="@drawable/update_changelog_background"
         android:focusable="true"

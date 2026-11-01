@@ -121,10 +121,14 @@ class UpdateActivity : FragmentActivity() {
             }
         }
 
-        // Die Buttons wechseln mit dem Zustand: Fokus neu setzen, sonst reagiert die Fernbedienung nicht
+        // Die Buttons wechseln mit dem Zustand: Fokus neu setzen, sonst reagiert die Fernbedienung nicht.
+        // post: beim ersten Anzeigen ist der Button noch nicht ausgelegt und kann keinen Fokus nehmen -
+        // dann landete er in den Notizen, wo hoch/runter nur scrollt und OK nichts tut.
         if (state.javaClass != renderedStateType) {
             renderedStateType = state.javaClass
-            if (binding.primaryButton.isVisible) binding.primaryButton.requestFocus()
+            binding.primaryButton.post {
+                if (binding.primaryButton.isVisible) binding.primaryButton.requestFocus()
+            }
         }
     }
 
