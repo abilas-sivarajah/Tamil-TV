@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Leanback-Basis: liefert Zeilen-, Header- und Fokus-Styles der TV-UI -->
+    <style name="Theme.TvClient" parent="Theme.Leanback">
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <!-- Theme der Poster-Karten: setzt nur die Textfarben, Rest kommt von Leanback -->
+    <style name="CardTheme" parent="Theme.Leanback">
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <!-- Player: echtes Vollbild, schwarzer Hintergrund, keine Systemleisten -->
+    <style name="Theme.TvClient.Player" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+</resources>

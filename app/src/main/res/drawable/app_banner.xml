@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Platzhalter-Banner (320x180) fuer den Fire-TV-Startbildschirm.
+  Fuer die Veroeffentlichung durch ein echtes 320x180-PNG ersetzen:
+  res/drawable-xhdpi/app_banner.png
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <path
+        android:fillColor="#FF1B1B22"
+        android:pathData="M0,0h320v180H0z" />
+    <path
+        android:fillColor="#FF3DDC97"
+        android:pathData="M132,62l64,28l-64,28z" />
+</vector>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TV Client</string>
+
+    <!-- Browse -->
+    <string name="error_categories">Kategorien konnten nicht geladen werden: %1$s</string>
+    <string name="error_row">\"%1$s\" konnte nicht geladen werden: %2$s</string>
+    <string name="error_empty_catalog">Das Backend hat keine Kategorien geliefert.</string>
+
+    <!-- Suche -->
+    <string name="search_hint">Titel suchen</string>
+    <string name="search_results">\"%1$s\" - %2$d Treffer</string>
+    <string name="search_no_results">Keine Treffer für \"%1$s\"</string>
+    <string name="search_failed">Suche fehlgeschlagen - Backend erreichbar?</string>
+
+    <!-- Player -->
+    <string name="player_retry">Erneut versuchen</string>
+    <string name="player_no_source">Kein Titel übergeben.</string>
+    <string name="player_resolve_failed">Stream konnte nicht geladen werden:\n%1$s</string>
+    <string name="player_playback_failed">Wiedergabe fehlgeschlagen:\n%1$s</string>
+</resources>

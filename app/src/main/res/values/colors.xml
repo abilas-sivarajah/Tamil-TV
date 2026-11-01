@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_background">#FF101014</color>
+    <color name="brand_primary">#FF1B1B22</color>
+    <color name="brand_accent">#FF3DDC97</color>
+
+    <color name="card_background">#FF1E1E26</color>
+    <color name="card_background_selected">#FF2F6B52</color>
+    <color name="card_placeholder">#FF26262F</color>
+</resources>
