@@ -38,6 +38,7 @@ import com.tvclient.app.data.model.StreamResponse
 import com.tvclient.app.data.model.SubtitleTrack
 import com.tvclient.app.data.remote.ApiClient
 import com.tvclient.app.data.remote.MediaRepository
+import com.tvclient.app.data.remote.TamilLiveTvScraper
 import com.tvclient.app.databinding.ActivityPlayerBinding
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -268,6 +269,18 @@ class PlayerActivity : FragmentActivity() {
     // aus androidx.core.app.ComponentActivity zugeordnet
     @SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Kanal +/- schaltet bei Live TV immer direkt um (auch bei Fehler-Overlay)
+        if (event.action == KeyEvent.ACTION_DOWN && movie?.isLiveTv == true) {
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_PAGE_UP -> {
+                    zapLiveChannel(-1); return true
+                }
+                KeyEvent.KEYCODE_CHANNEL_DOWN, KeyEvent.KEYCODE_PAGE_DOWN -> {
+                    zapLiveChannel(1); return true
+                }
+            }
+        }
+
         val exo = player
         // Bei sichtbarer Fehlermeldung gehoert die Fernbedienung dem "Erneut versuchen"-Button,
         // sonst schluckt OK den Klick als Play/Pause
@@ -321,14 +334,43 @@ class PlayerActivity : FragmentActivity() {
                     binding.playerView.showController()
                     return true
                 }
-                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    if (movie?.isLiveTv == true) {
+                        zapLiveChannel(-1)
+                    } else {
+                        binding.playerView.showController()
+                    }
+                    return true
+                }
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    binding.playerView.showController()
+                    if (movie?.isLiveTv == true) {
+                        zapLiveChannel(1)
+                    } else {
+                        binding.playerView.showController()
+                    }
                     return true
                 }
             }
         }
         return super.dispatchKeyEvent(event)
+    }
+
+    private fun zapLiveChannel(delta: Int) {
+        val current = movie ?: return
+        val channels = TamilLiveTvScraper.getLiveChannels(1).items
+        if (channels.size <= 1) return
+        val idx = channels.indexOfFirst { it.id == current.id }.takeIf { it >= 0 } ?: 0
+        val nextIdx = (idx + delta + channels.size) % channels.size
+        val nextMovie = channels[nextIdx]
+        resolveJob?.cancel()
+        releasePlayer(keepPosition = false)
+        movie = nextMovie
+        streamInfo = null
+        playbackPosition = C.TIME_UNSET
+        playWhenReady = true
+        binding.title.text = "${nextIdx + 1}/${channels.size} · ${nextMovie.title}"
+        binding.title.visibility = View.VISIBLE
+        resolveAndPlay()
     }
 
     private fun togglePlayPause(exo: ExoPlayer) {

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
+import androidx.leanback.widget.FocusHighlight
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
@@ -33,7 +34,12 @@ import kotlinx.coroutines.launch
  */
 class BrowseFragment : BrowseSupportFragment() {
 
-    private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+    private val rowsAdapter = ArrayObjectAdapter(
+        ListRowPresenter(FocusHighlight.ZOOM_FACTOR_NONE, false).apply {
+            shadowEnabled = false
+            selectEffectEnabled = false
+        }
+    )
     private val cardPresenter = CardPresenter()
 
     /** Zeilen-Zustand, nachschlagbar ueber den Adapter der jeweiligen ListRow. */
@@ -68,11 +74,20 @@ class BrowseFragment : BrowseSupportFragment() {
 
     private fun openPlayer(movie: Movie) {
         when {
+            movie.id == REFRESH_CARD_ID -> refreshCatalog()
             movie.id == UPDATE_CARD_ID -> checkForUpdateManually()
             movie.isChannelFolder -> startActivity(ChannelActivity.intent(requireContext(), movie))
             movie.isSeriesFolder -> startActivity(SeriesActivity.intent(requireContext(), movie))
             else -> startActivity(PlayerActivity.intent(requireContext(), movie))
         }
+    }
+
+    private fun refreshCatalog() {
+        MediaRepository.clearAllCaches()
+        rowStates.clear()
+        rowsAdapter.clear()
+        Toast.makeText(requireContext(), R.string.refresh_reloading, Toast.LENGTH_SHORT).show()
+        loadCatalog()
     }
 
     private fun loadCatalog() {
@@ -98,15 +113,25 @@ class BrowseFragment : BrowseSupportFragment() {
         }
     }
 
-    /** Letzte Zeile "App" mit der Kachel fuer die manuelle Update-Suche. */
+    /** Letzte Zeile "App" mit Katalog-Aktualisierung und manueller Update-Suche. */
     private fun addAppRow(index: Int) {
+        val pkg = requireContext().packageName
+        val refreshCard = Movie(
+            id = REFRESH_CARD_ID,
+            title = getString(R.string.refresh_card_title),
+            thumbnail = "android.resource://$pkg/${R.drawable.ic_refresh}",
+            year = getString(R.string.refresh_card_subtitle)
+        )
         val updateCard = Movie(
             id = UPDATE_CARD_ID,
             title = getString(R.string.update_card_title),
-            thumbnail = "android.resource://${requireContext().packageName}/${R.drawable.ic_update}",
+            thumbnail = "android.resource://$pkg/${R.drawable.ic_update}",
             year = getString(R.string.update_card_subtitle, UpdateManager.currentVersion)
         )
-        val listAdapter = ArrayObjectAdapter(cardPresenter).apply { add(updateCard) }
+        val listAdapter = ArrayObjectAdapter(cardPresenter).apply {
+            add(refreshCard)
+            add(updateCard)
+        }
         rowsAdapter.add(ListRow(HeaderItem(index.toLong(), getString(R.string.row_app)), listAdapter))
     }
 
@@ -184,6 +209,7 @@ class BrowseFragment : BrowseSupportFragment() {
     }
 
     companion object {
+        private const val REFRESH_CARD_ID = "app:refresh_catalog"
         private const val UPDATE_CARD_ID = "app:check_update"
         private const val PREFETCH_DISTANCE = 6
         private const val INITIAL_ROWS_TO_PREFETCH = 5

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
+import androidx.leanback.widget.FocusHighlight
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
@@ -27,7 +28,12 @@ import kotlinx.coroutines.launch
  */
 class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResultProvider {
 
-    private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+    private val rowsAdapter = ArrayObjectAdapter(
+        ListRowPresenter(FocusHighlight.ZOOM_FACTOR_NONE, false).apply {
+            shadowEnabled = false
+            selectEffectEnabled = false
+        }
+    )
     private val resultsAdapter = ArrayObjectAdapter(CardPresenter())
     private var searchJob: Job? = null
     private var lastQuery: String = ""

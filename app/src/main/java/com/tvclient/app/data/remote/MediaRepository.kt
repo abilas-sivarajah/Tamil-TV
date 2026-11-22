@@ -99,6 +99,11 @@ object MediaRepository {
         }
     }
 
+    fun clearAllCaches() {
+        TamildhoolScraper.clearCache()
+        TamilgunScraper.clearCache()
+    }
+
     private suspend fun <T> io(block: suspend () -> T): Result<T> =
         withContext(Dispatchers.IO) {
             try {

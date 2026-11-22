@@ -230,6 +230,11 @@ object TamildhoolScraper {
         streamCache.remove(movieId.removePrefix(PREFIX_EPISODE))
     }
 
+    fun clearCache() {
+        cache.clear()
+        streamCache.clear()
+    }
+
     fun resolveEpisodeStream(movieId: String): StreamResponse {
         val epUrl = movieId.removePrefix(PREFIX_EPISODE)
         val now = System.currentTimeMillis()

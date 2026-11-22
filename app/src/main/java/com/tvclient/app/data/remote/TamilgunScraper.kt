@@ -34,6 +34,10 @@ object TamilgunScraper {
     fun getCategories(): List<Category> =
         categorySpecs.map { Category(id = it.id, title = it.title) }
 
+    fun clearCache() {
+        catalogCache.clear()
+    }
+
     fun scrapeMovies(categoryId: String, page: Int): MovieListResponse {
         val cacheKey = "cat_${categoryId}_$page"
         val now = System.currentTimeMillis()

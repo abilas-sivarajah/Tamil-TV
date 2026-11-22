@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.BundleCompat
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
+import androidx.leanback.widget.FocusHighlight
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
@@ -32,7 +33,12 @@ import kotlinx.coroutines.launch
  */
 class SeriesFragment : BrowseSupportFragment() {
 
-    private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+    private val rowsAdapter = ArrayObjectAdapter(
+        ListRowPresenter(FocusHighlight.ZOOM_FACTOR_NONE, false).apply {
+            shadowEnabled = false
+            selectEffectEnabled = false
+        }
+    )
     private val cardPresenter = CardPresenter()
 
     private var series: Movie? = null

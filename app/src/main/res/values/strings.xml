@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TV Client</string>
+    <string name="app_name">Tamil TV</string>
 
     <!-- Browse -->
     <string name="error_categories">Kategorien konnten nicht geladen werden: %1$s</string>
@@ -19,8 +19,11 @@
     <string name="player_resolve_failed">Stream konnte nicht geladen werden:\n%1$s</string>
     <string name="player_playback_failed">Wiedergabe fehlgeschlagen:\n%1$s</string>
 
-    <!-- Updates -->
+    <!-- Updates & App -->
     <string name="row_app">App</string>
+    <string name="refresh_card_title">Katalog aktualisieren</string>
+    <string name="refresh_card_subtitle">Cache leeren &amp; neu laden</string>
+    <string name="refresh_reloading">Katalog wird aktualisiert…</string>
     <string name="update_card_title">Nach Updates suchen</string>
     <string name="update_card_subtitle">Version %1$s</string>
     <string name="update_checking">Suche nach Updates…</string>

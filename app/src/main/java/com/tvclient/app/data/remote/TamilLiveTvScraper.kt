@@ -50,8 +50,8 @@ object TamilLiveTvScraper {
         LiveChannelDef(
             key = "zee_tamil_hd",
             title = "Zee Tamil HD",
-            subtitle = "LIVE • 1080p",
-            streamUrl = "https://d2o8pibksxtln6.cloudfront.net/live/media/Zee_Tamil_HD/hls/Zee_Tamil_HD.m3u8",
+            subtitle = "LIVE • 720p",
+            streamUrl = "https://da86m1sqpm3o0.cloudfront.net/28072023/smil:zeetamil1.smil/playlist.m3u8",
             logoUrl = "https://dtil.tmsimg.com/assets/GNLZZGG00233WCL.png?lock=720x540",
             matchKeywords = listOf("zee tamil")
         ),
